@@ -1,74 +1,117 @@
-#include "shell.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
- * *_strncpy - copies a string
- * @dest: the destination string to be copied to
- * @src: the source string
- * @n: the amount of characters to be copied
- * Return: the concatenated string
+ * _myexit - exits the shell
+ * @info: Structure containing potential arguments. Used to maintain
+ * constant function prototype.
+ * Return: exits with a give exit status
+ * (0) if info.argv[0] != "exit"
  */
-char *_strncpy(char *dest, char *src, int n)
+int _myexit(info_t *info)
 {
-	int i, j;
-	char *s = dest;
+  int exitcheck;
 
-	i = 0;
-	while (src[i] != '\0' && i < n - 1)
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	if (i < n)
-	{
-		j = i;
-		while (j < n)
-		{
-			dest(j) = '\0';
-			j++;
-		}
-	}
-	return (s);
+  if (info->argv[1]) /* if there is an exit argument */
+  {
+    exitcheck = atoi(info->argv[1]);
+    if (exitcheck == -1)
+    {
+      info->status = 2;
+      printf("Illegal number: %s\n", info->argv[1]);
+      return (1);
+    }
+    info->err_num = exitcheck;
+    return (-2);
+  }
+  info->err_num = -1;
+  return (-2);
 }
 
 /**
- * *_strncat - concatenates two strings
- * @dest: the first or destination string
- * @src: the second or source string
- * @n: the amount of bytes to be maximally used
- * Return: the concanated string
+ * _mycd - changes the current directory of the process
+ * @info: Structure containing potential arguments. Used to maintain
+ * constant function protype.
+ * Return: Always 0
  */
-char *_strncat(char *dest, char *src, int n)
+int _mycd(info_t *info)
 {
-	int i, j;
-	char *s = dest;
+  char *s, *dir, buffer[1024];
+  int chdir_ret;
 
-	i = 0;
-	j = 0;
-	while (dest[i] != '\0')
-		i++;
-	while (src[j] != '\0' && j < n)
-	{
-		dest[i] = src[j];
-		i++;
-		j++;
-	}
-	if (j < n)
-		dest[i] = '\0';
-	return (s);
+  s = getcwd(buffer, 1024);
+  if (!s)
+    printf("TODO: >>getcwd failure emsg here<<\n");
+  if (!info->argv[1])
+  {
+    dir = getenv("HOME");
+    if (!dir)
+      chdir_ret = chdir("/");
+    else
+      chdir_ret = chdir(dir);
+  }
+  else if (strcmp(info->argv[1], "-") == 0)
+  {
+    if (!getenv("OLDPWD"))
+    {
+      printf("%s\n", s);
+      return (1);
+    }
+    printf("%s\n", getenv("OLDPWD"));
+    chdir_ret = chdir(getenv("OLDPWD"));
+  }
+  else
+    chdir_ret = chdir(info->argv[1]);
+  if (chdir_ret == -1)
+  {
+    printf("can't cd to %s\n", info->argv[1]);
+  }
+  else
+  {
+    setenv("OLDPWD", getenv("PWD"), 1);
+    setenv("PWD", getcwd(buffer, 1024), 1);
+  }
+  return (0);
 }
 
 /**
- * *_strchr - locates a character ina  string
- * @s: the string to be parsed
- * @c: the character to look for
- * Return: (s) a pointer to the memory area s
+ * _myhelp - changes the current directory of the process
+ * @info: Structure containing potential arguments. Used to maintain
+ * constant function prototype.
+ * Return: Always 0
  */
-char *_strchr(char *s, char c)
+int _myhelp(info_t *info)
 {
-	do {
-		if (*s == c)
-			return (s);
-	} while (*s++ != '\0');
-
-	return (NULL);
+  printf("help call works. Function not yet implemented \n");
+  return (0);
 }
+
+/**
+ * _myhistory - displays the history list, one command by line, preceded
+ * with line numbers, starting at 0.
+ * @info: Structure containing potential arguments. Used to maintain
+ * constant function prototype.
+ * Return: Always 0
+ */
+int _myhistory(info_t *info)
+{
+  list_t *node = info->history;
+  int i = 0;
+
+  while (node)
+  {
+    printf("%d: %s\n", i++, node->str);
+    node = node->next;
+  }
+  return (0);
+}
+
+/**
+ * unset_alias - sets alias to string
+ * @info: parameter struct
+ * @str: the string alias
+ *
+ * Return: Always 0 on success, 1 on error
+ */
+int unset_alias(info_t *info, char *str)

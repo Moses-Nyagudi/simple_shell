@@ -45,7 +45,7 @@ int _mycd(info_t *info)
     printf("TODO: >>getcwd failure emsg here<<\n");
   if (!info->argv[1])
   {
-    dir = getenv("HOME");
+    dir = getenvironment("HOME");
     if (!dir)
       chdir_ret = chdir("/");
     else
@@ -53,13 +53,13 @@ int _mycd(info_t *info)
   }
   else if (strcmp(info->argv[1], "-") == 0)
   {
-    if (!getenv("OLDPWD"))
+    if (!getenvironment("OLDPWD"))
     {
       printf("%s\n", s);
       return (1);
     }
-    printf("%s\n", getenv("OLDPWD"));
-    chdir_ret = chdir(getenv("OLDPWD"));
+    printf("%s\n", getenvironment("OLDPWD"));
+    chdir_ret = chdir(getenvironment("OLDPWD"));
   }
   else
     chdir_ret = chdir(info->argv[1]);
@@ -69,7 +69,7 @@ int _mycd(info_t *info)
   }
   else
   {
-    setenv("OLDPWD", getenv("PWD"), 1);
+    setenv("OLDPWD", getenvironment("PWD"), 1);
     setenv("PWD", getcwd(buffer, 1024), 1);
   }
   return (0);
@@ -115,4 +115,3 @@ int _myhistory(info_t *info)
  * Return: Always 0 on success, 1 on error
  */
 int unset_alias(info_t *info, char *str)
-{

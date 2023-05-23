@@ -78,7 +78,7 @@ int _mycd(info_t *info)
 /**
  * _myhelp - changes the current directory of the process
  * @info: Structure containing potential arguments. Used to maintain
- * constant function prototype.
+ * constant function prototype
  * Return: Always 0
  */
 int _myhelp(info_t *info)
@@ -86,33 +86,3 @@ int _myhelp(info_t *info)
   printf("help call works. Function not yet implemented \n");
   return (0);
 }
-
-/**
- * _myhistory - displays the history list, one command by line, preceded
- * with line numbers, starting at 0.
- * @info: Structure containing potential arguments. Used to maintain
- * constant function prototype.
- * Return: Always 0
- */
-int _myhistory(info_t *info)
-{
-  list_t *node = info->history;
-  int i = 0;
-
-  while (node)
-  {
-    printf("%d: %s\n", i++, node->str);
-    node = node->next;
-  }
-  return (0);
-}
-
-/**
- * unset_alias - sets alias to string
- * @info: parameter struct
- * @str: the string alias
- *
- * Return: Always 0 on success, 1 on error
- */
-int unset_alias(info_t *info, char *str)
-{

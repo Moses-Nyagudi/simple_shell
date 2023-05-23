@@ -1,121 +1,102 @@
-#include "shell.h"
+int _myexit(info_t *info) {
+  int exitcheck;
 
-/**
- * list_len - determines length of linked list
- * @h: pointer to first node
- *
- * Return: size of list
- */
-size_t list_len(const list_t *h)
-{
-	size_t i = 0;
-
-	while (h)
-	{
-		h = h->next;
-		i++;
-	}
-	return (i);
+  if (info->argv[1]) { /* if there is an exit argument */
+    exitcheck = atoi(info->argv[1]);
+    if (exitcheck == -1) {
+      info->status = 2;
+      printf("Illegal number: %s\n", info->argv[1]);
+      return (1);
+    }
+    info->err_num = exitcheck;
+    return (-2);
+  }
+  info->err_num = -1;
+  return (-2);
 }
 
-/**
- * list_to_strings - returns an array of strings of the list->str
- * @head: pointer to first node
- *
- * Return: array of strings
- */
-char **list_to_strings(list_t *head)
-{
-	list_t *node = head;
-	size_t i = list_len(head), j;
-	char **strs;
-	char *str;
+int _mycd(info_t *info) {
+  char *s, *dir, buffer[1024];
+  int chdir_ret;
 
-	if (!head || !i)
-		return (NULL);
-	strs = malloc(sizeof(char *) * (i + 1));
-	if (!strs)
-		return (NULL);
-	for (i = 0; node; node = node->next, i++)
-	{
-		str = malloc(_strlen(node->str) + 1);
-		if (!str)
-		{
-			for (j = 0; j < i; j++)
-				free(strs[j]);
-			free(strs);
-			return (NULL);
-		}
-
-		str = _strcpy(str, node->strs);
-		strs[i] = str;
-	}
-	str[i] = NULL;
-	return (strs);
+  s = getcwd(buffer, 1024);
+  if (!s) {
+    printf("TODO: >>getcwd failure emsg here<<\n");
+  }
+  if (!info->argv[1]) {
+    dir = getenv("HOME");
+    if (!dir) {
+      chdir_ret = chdir("/");
+    } else {
+      chdir_ret = chdir(dir);
+    }
+  } else if (strcmp(info->argv[1], "-") == 0) {
+    if (!getenv("OLDPWD")) {
+      printf("%s\n", s);
+      return (1);
+    }
+    printf("%s\n", getenv("OLDPWD"));
+    chdir_ret = chdir(getenv("OLDPWD"));
+  } else {
+    chdir_ret = chdir(info->argv[1]);
+  }
+  if (chdir_ret == -1) {
+    printf("can't cd to %s\n", info->argv[1]);
+  } else {
+    setenv("OLDPWD", getenv("PWD"), 1);
+    setenv("PWD", getcwd(buffer, 1024), 1);
+  }
+  return (0);
 }
 
-/**
- * print_list - prints all elements of a list_t linked list
- * @h: pointer to first node
- *
- * Return: size of list
- */
-size_t print_list(const list_t *h)
-{
-	size_t i = 0;
-
-	while (h)
-	{
-		_puts(convert_number(h->num, 10, 0));
-		_putchar(':');
-		_putchar(' ');
-		_puts(h->str ? h->str : "(nil)");
-		_puts("\n");
-		h = h->next;
-		i++;
-	}
-	return (i);
+int _myhelp(info_t *info) {
+  printf("help call works. Function not yet implemented \n");
+  return (0);
 }
 
-/**
- * node_starts_with - returns node whose string starts with prefix
- * @node: pointer to list head
- * @prefix: string to match
- * @c: the next xharacter after prefix to matcg
- *
- * Return: match node or null
- */
-list_t *node_starts_with(list_t *nide, char *prefix, char c)
-{
-	char *p = NULL;
+int _myhistory(info_t *info) {
+  list_t *node = info->history;
+  int i = 0;
 
-	while (node)
-	{
-		p = starts_with(node->str, prefix);
-		if (p && ((c == -1) || (*p == c)))
-			return (node);
-		node = node->next;
-	}
-	return (NULL);
+  while (node) {
+    printf("%d: %s\n", i++, node->str);
+    node = node->next;
+  }
+  return (0);
 }
 
-/**
- * get_node_index - gets the index of a node
- * @head: pointer to list head
- * @node: pointer to the node
- *
- * Return: index of node or -1
- */
-ssize_t get_node_index(list_t *head, list_t *node)
-{
-	size_t i = 0;
-
-	while (head)
-	{
-		if (head == node)
-			return (i);
-		head = head->next;
-		i++;
-	}
-	return (-1);
+int unset_alias(info_t *info, char *str) {
+  list_t *node = info->alias;
+  while (node) {
+    if (strcmp(node->str, str) == 0) {
+      free(node->str);
+      free(node);
+      info->alias = node->next;
+      return (0);
+    }
+    node = node->next;
+  }
+  return (1);
 }
+
+ssize_t input_buf(info_t *info, char **buf, size_t *len) {
+  ssize_t r = 0;
+  size_t len_p = 0;
+
+  if (!*len) { /* if nothing is left in the buffer, fill it */
+    free(*buf);
+    *buf = NULL;
+    signal(SIGINT, sigintHandler);
+#if USE_GETLINE
+    r = getline(buf, &len_p, stdin);
+#else
+    r = _getline(info, buf, &len_p);
+#endif
+    if (r > 0) {
+      if ((*buf)[r - 1] == '\n') {
+        (*buf)[r - 1] = '\0';
+        r--;
+      }
+      info->linecount_flag = 1;
+      remove_comments(*buf);
+      build_history_
