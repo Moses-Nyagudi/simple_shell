@@ -1,4 +1,4 @@
-#include "shell.h"
+#include "main.h"
 
 /**
  * list_len - determines length of linked list
@@ -47,12 +47,13 @@ char **list_to_strings(list_t *head)
 			return (NULL);
 		}
 
-		str = _strcpy(str, node->strs);
+		str = _strcpy(str, node->str);
 		strs[i] = str;
 	}
-	str[i] = NULL;
+	strs[i] = NULL;
 	return (strs);
 }
+
 
 /**
  * print_list - prints all elements of a list_t linked list
@@ -81,11 +82,11 @@ size_t print_list(const list_t *h)
  * node_starts_with - returns node whose string starts with prefix
  * @node: pointer to list head
  * @prefix: string to match
- * @c: the next xharacter after prefix to matcg
+ * @c: the next character after prefix to match
  *
  * Return: match node or null
  */
-list_t *node_starts_with(list_t *nide, char *prefix, char c)
+list_t *node_starts_with(list_t *node, char *prefix, char c)
 {
 	char *p = NULL;
 

@@ -1,17 +1,17 @@
-#include "shell.h"
+#include "main.h"
 
 /**
  * get_history_file - gets the history file
  * @info: parameter struct
  *
- * Return: allocated string containing history file
+ * Return: allocated string containg history file
  */
 
 char *get_history_file(info_t *info)
 {
 	char *buf, *dir;
 
-	dir = _getenv(info, "HIME=");
+	dir = _getenv(info, "HOME=");
 	if (!dir)
 		return (NULL);
 	buf = malloc(sizeof(char) * (_strlen(dir) + _strlen(HIST_FILE) + 2));
@@ -32,7 +32,7 @@ char *get_history_file(info_t *info)
  */
 int write_history(info_t *info)
 {
-	size_t fd;
+	ssize_t fd;
 	char *filename = get_history_file(info);
 	list_t *node = NULL;
 
@@ -52,11 +52,12 @@ int write_history(info_t *info)
 	close(fd);
 	return (1);
 }
+
 /**
  * read_history - reads history from file
  * @info: the parameter struct
  *
- * Return: history on success, 0 otherwise
+ * Return: histcount on success, 0 otherwise
  */
 int read_history(info_t *info)
 {
@@ -75,6 +76,9 @@ int read_history(info_t *info)
 	if (!fstat(fd, &st))
 		fsize = st.st_size;
 	if (fsize < 2)
+		return (0);
+	buf = malloc(sizeof(char) * (fsize + 1));
+	if (!buf)
 		return (0);
 	rdlen = read(fd, buf, fsize);
 	buf[fsize] = 0;
@@ -115,7 +119,7 @@ int build_history_list(info_t *info, char *buf, int linecount)
 	add_node_end(&node, buf, linecount);
 
 	if (!info->history)
-		ifo->history = node;
+		info->history = node;
 	return (0);
 }
 
