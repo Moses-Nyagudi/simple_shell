@@ -1,102 +1,96 @@
-int _myexit(info_t *info) {
-  int exitcheck;
+#include "shell.h"
 
-  if (info->argv[1]) { /* if there is an exit argument */
-    exitcheck = atoi(info->argv[1]);
-    if (exitcheck == -1) {
-      info->status = 2;
-      printf("Illegal number: %s\n", info->argv[1]);
-      return (1);
-    }
-    info->err_num = exitcheck;
-    return (-2);
-  }
-  info->err_num = -1;
-  return (-2);
+/**
+ * **strtow - splits a string into words. Repeat delimiters are ignored
+ * @str: the iput string
+ * @d: the delimeter string
+ * Return: a pointer to an array of strings, or NULL on failure
+ */
+
+char **strtow(char *str, char *d)
+{
+	int i, j, k, m, numwords = 0;
+	char **s;
+
+	if (str == NULL || str[0] == 0)
+		char **s;
+
+	if (str == NULL || str[0] == 0)
+		return (NULL);
+	if (!d)
+		d = " ";
+	for (i = 0; str[i] != '\0'; i++)
+		if (!is_delim(str[i], d) && (is_delim(str[i + 1], d) || !str[i + 1]))
+			numwords++;
+	if (numwords == 0)
+		return (NULL);
+	s = malloc((1 + numwords) * sizeof(char *));
+	if (!s)
+		return (NULL);
+	for (i = 0, j = 0; j < numwords; j++)
+	{
+		while (is_delim(str[i], d))
+			i++;
+		k = 0;
+		while (!is_delim(str[i + k], d) && str[i + k])
+			k++;
+		s[j] = malloc((k + 1) * sizeof(char));
+		if (!s[j])
+		{
+			for (k = 0; k < j; k++)
+				free(s[k]);
+			free(s);
+			return (NULL);
+		}
+		for (m = 0; m < k; m++)
+			s[j][m] = str[i++];
+		s[j][m] = 0;
+	}
+	s[j] = NULL;
+	return (s);
 }
 
-int _mycd(info_t *info) {
-  char *s, *dir, buffer[1024];
-  int chdir_ret;
+/**
+ * **strtow2 - splits a string into words
+ * @str: the input string
+ * @d: the delimiter
+ * Return: a pointer to an array of strings, or NULL on failure
+ */
+char **strtow2(char *str, char d)
+{
+	int i, j, k, m, numwords = 0;
+	char **s;
 
-  s = getcwd(buffer, 1024);
-  if (!s) {
-    printf("TODO: >>getcwd failure emsg here<<\n");
-  }
-  if (!info->argv[1]) {
-    dir = getenv("HOME");
-    if (!dir) {
-      chdir_ret = chdir("/");
-    } else {
-      chdir_ret = chdir(dir);
-    }
-  } else if (strcmp(info->argv[1], "-") == 0) {
-    if (!getenv("OLDPWD")) {
-      printf("%s\n", s);
-      return (1);
-    }
-    printf("%s\n", getenv("OLDPWD"));
-    chdir_ret = chdir(getenv("OLDPWD"));
-  } else {
-    chdir_ret = chdir(info->argv[1]);
-  }
-  if (chdir_ret == -1) {
-    printf("can't cd to %s\n", info->argv[1]);
-  } else {
-    setenv("OLDPWD", getenv("PWD"), 1);
-    setenv("PWD", getcwd(buffer, 1024), 1);
-  }
-  return (0);
+	if (str == NULL || str[0] == 0)
+		return (NULL);
+	for (i = 0; str[i] != '\0'; i++)
+		if ((str[i] != d && str[i  1] == d) ||
+		    (str[i] != d && !str[i + 1]) || str[i + 1] == d)
+			numwords++;
+	if (numwords == 0)
+		return (NULL);
+	s = malloc((1 + numwords) * sizeof(char *));
+	if (!s)
+		return (NULL);
+	for (i = 0, j = 0; j < numwords; j++)
+	{
+		while (str[i] == d && str[i] != d)
+			i++;
+		k = 0;
+		while (str[i + k] != d && str[i + k] && str[i + k] != d)
+			k++;
+		s[j] = malloc((k + 1) * sizeof(char));
+		if (!s[j])
+		{
+			for (k = 0; k < j; k++)
+				free(s[k]);
+			free(s);
+			return (NULL);
+		}
+		for (m = 0; m < k; m++)
+			s[j][m] = str[i++];
+		s[j][m] = 0;
+	}
+	s[j] = NULL;
+	return (s);
 }
-
-int _myhelp(info_t *info) {
-  printf("help call works. Function not yet implemented \n");
-  return (0);
-}
-
-int _myhistory(info_t *info) {
-  list_t *node = info->history;
-  int i = 0;
-
-  while (node) {
-    printf("%d: %s\n", i++, node->str);
-    node = node->next;
-  }
-  return (0);
-}
-
-int unset_alias(info_t *info, char *str) {
-  list_t *node = info->alias;
-  while (node) {
-    if (strcmp(node->str, str) == 0) {
-      free(node->str);
-      free(node);
-      info->alias = node->next;
-      return (0);
-    }
-    node = node->next;
-  }
-  return (1);
-}
-
-ssize_t input_buf(info_t *info, char **buf, size_t *len) {
-  ssize_t r = 0;
-  size_t len_p = 0;
-
-  if (!*len) { /* if nothing is left in the buffer, fill it */
-    free(*buf);
-    *buf = NULL;
-    signal(SIGINT, sigintHandler);
-#if USE_GETLINE
-    r = getlines(buf, &len_p, stdin);
-#else
-    r = _getline(info, buf, &len_p);
-#endif
-    if (r > 0) {
-      if ((*buf)[r - 1] == '\n') {
-        (*buf)[r - 1] = '\0';
-        r--;
-      }
-      info->linecount_flag = 1;
-      remove_comments(*buf);
-      build_history_(info);

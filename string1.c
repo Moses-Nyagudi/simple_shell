@@ -1,102 +1,87 @@
-int _myexit(info_t *info) {
-  int exitcheck;
+#include "shell.h"
 
-  if (info->argv[1]) { /* if there is an exit argument */
-    exitcheck = atoi(info->argv[1]);
-    if (exitcheck == -1) {
-      info->status = 2;
-      printf("Illegal number: %s\n", info->argv[1]);
-      return (1);
-    }
-    info->err_num = exitcheck;
-    return (-2);
-  }
-  info->err_num = -1;
-  return (-2);
+/**
+ * _strcpy - copies a string
+ * @dest: the destination
+ * @src: the source
+ *
+ * Return: pointer to destination
+ */
+char *_strcpy(char *dest, char *src)
+{
+	int i = 0;
+
+	if (dest == src || src == 0)
+		return  (dest);
+	while (src[i])
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = 0;
+	return (dest);
 }
 
-int _mycd(info_t *info) {
-  char *s, *dir, buffer[1024];
-  int chdir_ret;
+/**
+ * _strdup - duplicates a string
+ * @str: the string to duplicate
+ *
+ * Return: pointer to the duplicated string
+ */
+char *_strdup(const char *str)
+{
+	int length = 0;
+	char *ret;
 
-  s = getcwd(buffer, 1024);
-  if (!s) {
-    printf("TODO: >>getcwd failure emsg here<<\n");
-  }
-  if (!info->argv[1]) {
-    dir = getenv("HOME");
-    if (!dir) {
-      chdir_ret = chdir("/");
-    } else {
-      chdir_ret = chdir(dir);
-    }
-  } else if (strcmp(info->argv[1], "-") == 0) {
-    if (!getenv("OLDPWD")) {
-      printf("%s\n", s);
-      return (1);
-    }
-    printf("%s\n", getenv("OLDPWD"));
-    chdir_ret = chdir(getenv("OLDPWD"));
-  } else {
-    chdir_ret = chdir(info->argv[1]);
-  }
-  if (chdir_ret == -1) {
-    printf("can't cd to %s\n", info->argv[1]);
-  } else {
-    setenv("OLDPWD", getenv("PWD"), 1);
-    setenv("PWD", getcwd(buffer, 1024), 1);
-  }
-  return (0);
+	if (str == NULL)
+		return (NULL);
+	while (*str++)
+		length++;
+	ret = malloc(sizeof(char) * (length + 1));
+	if (!ret)
+		return (NULL);
+	for (length++; length--;)
+		ret[length] = *--str;
+	return (ret);
 }
 
-int _myhelp(info_t *info) {
-  printf("help call works. Function not yet implemented \n");
-  return (0);
+/**
+ * _puts - prints an input string
+ * @str: the string to be printed
+ *
+ * Return: Nothing
+ */
+void _puts(char *str)
+{
+	int i = 0;
+
+	if (!str)
+		return;
+	while (str[i] != '\0')
+	{
+		_putchar(str[i]);
+		i++;
+	}
 }
 
-int _myhistory(info_t *info) {
-  list_t *node = info->history;
-  int i = 0;
+/**
+ * _putchar - writes the character c to stdout
+ * @c: The character to print
+ *
+ * Return: On success 1.
+ * On error, -1 is returned, and errno is set appropriately.
+ */
+int _putchar(char c)
+{
+	static int i;
+	static char buf[WRITE_BUF_SIZE];
 
-  while (node) {
-    printf("%d: %s\n", i++, node->str);
-    node = node->next;
-  }
-  return (0);
+	if (c == BUF_FLUSH || i >= WRITE_BUF_SIZE)
+	{
+		write(1, buf, i);
+		i = 0;
+	}
+	if (c != BUF_FLUSH)
+		buf[i++] = c;
+	return (1);
 }
-
-int unset_alias(info_t *info, char *str) {
-  list_t *node = info->alias;
-  while (node) {
-    if (strcmp(node->str, str) == 0) {
-      free(node->str);
-      free(node);
-      info->alias = node->next;
-      return (0);
-    }
-    node = node->next;
-  }
-  return (1);
-}
-
-ssize_t input_buf(info_t *info, char **buf, size_t *len) {
-  ssize_t r = 0;
-  size_t len_p = 0;
-
-  if (!*len) { /* if nothing is left in the buffer, fill it */
-    free(*buf);
-    *buf = NULL;
-    signal(SIGINT, sigintHandler);
-#if USE_GETLINE
-    r = getlines(buf, &len_p, stdin);
-#else
-    r = _getline(info, buf, &len_p);
-#endif
-    if (r > 0) {
-      if ((*buf)[r - 1] == '\n') {
-        (*buf)[r - 1] = '\0';
-        r--;
-      }
-      info->linecount_flag = 1;
-      remove_comments(*buf);
-      build_history_(info);

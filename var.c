@@ -1,102 +1,150 @@
-int _myexit(info_t *info) {
-  int exitcheck;
+#include "shell.h"
 
-  if (info->argv[1]) { /* if there is an exit argument */
-    exitcheck = atoi(info->argv[1]);
-    if (exitcheck == -1) {
-      info->status = 2;
-      printf("Illegal number: %s\n", info->argv[1]);
-      return (1);
-    }
-    info->err_num = exitcheck;
-    return (-2);
-  }
-  info->err_num = -1;
-  return (-2);
+/**
+ * is_chain - test if current char in buffer is a chain delimeter
+ * @info: the parater struct
+ * @buf: the char buffer
+ * @p: address of current position in buf
+ * Return: 1 if chain delimeter, 0 otherwise
+ */
+int is_chain(info_t *info, char *buf, size_t *p)
+{
+	size_t j = *p;
+
+	if (buf[j] == '|' && buf[j + 1] == '|')
+	{
+		buf[j] = 0;
+		j++;
+		info->cmd_buf_type = CMD_OR;
+	}
+	else if (buf[j] == '&' && buf[j + 1] == '&')
+	{
+		buf[j] = 0;
+		j++;
+		info->cmd_buf_type = CMD_AND;
+	}
+	else if (buf[j] == ';')/* found end of this command*/
+	{
+		buf[j] = 0; /* replace semicolon with null*/
+		info->cmd_buf_type = CMD_CHAIN;
+	}
+	else
+		return (0);
+	*p = j;
+	return (1);
 }
 
-int _mycd(info_t *info) {
-  char *s, *dir, buffer[1024];
-  int chdir_ret;
+/**
+ * check_chain - checks we should continue chaining based on last status
+ * @info: the parameter struct
+ * @buf: the char buffer
+ * @p: address of current position in buf
+ * @i: starting position in buf
+ * @len: length of buf
+ * Return: void
+ */
+void check_chain(info_t *info, char *buf, size_t *p, size_t i, size_t len)
+{
+	size_t j = *p;
 
-  s = getcwd(buffer, 1024);
-  if (!s) {
-    printf("TODO: >>getcwd failure emsg here<<\n");
-  }
-  if (!info->argv[1]) {
-    dir = getenv("HOME");
-    if (!dir) {
-      chdir_ret = chdir("/");
-    } else {
-      chdir_ret = chdir(dir);
-    }
-  } else if (strcmp(info->argv[1], "-") == 0) {
-    if (!getenv("OLDPWD")) {
-      printf("%s\n", s);
-      return (1);
-    }
-    printf("%s\n", getenv("OLDPWD"));
-    chdir_ret = chdir(getenv("OLDPWD"));
-  } else {
-    chdir_ret = chdir(info->argv[1]);
-  }
-  if (chdir_ret == -1) {
-    printf("can't cd to %s\n", info->argv[1]);
-  } else {
-    setenv("OLDPWD", getenv("PWD"), 1);
-    setenv("PWD", getcwd(buffer, 1024), 1);
-  }
-  return (0);
+	if (info->cmd_buf_type == CMD_AND)
+	{
+		if (info->status)
+		{
+			buf[i] = 0;
+			j = len;
+		}
+	}
+	if (info->cmd_buf_type == CMD_OR)
+	{
+		if (!info->status)
+		{
+			buf[i] = 0;
+			j = len;
+		}
+	}
+	*p = j;
 }
 
-int _myhelp(info_t *info) {
-  printf("help call works. Function not yet implemented \n");
-  return (0);
+/**
+ * replace_alias - replaces an aliases in the tokenized string
+ * @info: the parameter struct
+ *
+ * Return: 1 if replaced, 0 otherwise
+ */
+int replace_alias(info_t *info)
+{
+	int i;
+	list_t *node;
+	char *p;
+
+	for (i = 0; i < 10; i++)
+	{
+		node = node_starts_with(info->alias, info->argv[0], '=');
+		if (!node)
+			return (0);
+		free(info->argv[0]);
+		p = _strchr(node->str, '=');
+		if (!p)
+			return (0);
+		p = _strdup(p + 1);
+		if (!p)
+			return (0);
+		info->argv[0] = p;
+	}
+	return (1);
 }
 
-int _myhistory(info_t *info) {
-  list_t *node = info->history;
-  int i = 0;
+/**
+ * replace_vars - replaces vars in the tokenized string
+ * @info: the parameter struct
+ *
+ * Return: 1 if replaced, 0 otherwise
+ */
+int replace_vars(info_t *info)
+{
+	int i = 0;
+	list_t *node;
 
-  while (node) {
-    printf("%d: %s\n", i++, node->str);
-    node = node->next;
-  }
-  return (0);
+	for (i = 0; info->argv[i]; i++)
+	{
+		if (info->argv[i][0] != '$' || !info->argv[i][1])
+			continue;
+
+		if (!_strcmp(info->argv[i], "$?"))
+		{
+			replace_string(&(info->argv[i]),
+				_strdup(convert_number(info->status, 10, 0)));
+			continue;
+		}
+		if (!_strcmp(info->argv[i], "$$"))
+		{
+			replace_string(&(info->argv[i]),
+					_strdup(convert_number(getpid(), 10, 0)));
+			continue;
+		}
+		node = node_starts_with(info->env, &info->argv[i][1], '=');
+		if (node)
+		{
+			replace_string(&(info->argv[i]),
+				_strdup(_strchr(node->str, '=') + 1));
+			continue;
+		}
+		replace_string(&info->argv[i], _strdup(""));
+
+	}
+	return (0);
 }
 
-int unset_alias(info_t *info, char *str) {
-  list_t *node = info->alias;
-  while (node) {
-    if (strcmp(node->str, str) == 0) {
-      free(node->str);
-      free(node);
-      info->alias = node->next;
-      return (0);
-    }
-    node = node->next;
-  }
-  return (1);
+/**
+ * replace_string - replaces string - replaces string
+ * @old: address of old string
+ * @new: new string
+ * Return: 1 if replaced, 0 otherwise
+ */
+int replace_string(char **old, char *new)
+{
+	free(*old);
+	*old = new;
+	return (1);
 }
-
-ssize_t input_buf(info_t *info, char **buf, size_t *len) {
-  ssize_t r = 0;
-  size_t len_p = 0;
-
-  if (!*len) { /* if nothing is left in the buffer, fill it */
-    free(*buf);
-    *buf = NULL;
-    signal(SIGINT, sigintHandler);
-#if USE_GETLINE
-    r = getlines(buf, &len_p, stdin);
-#else
-    r = _getline(info, buf, &len_p);
-#endif
-    if (r > 0) {
-      if ((*buf)[r - 1] == '\n') {
-        (*buf)[r - 1] = '\0';
-        r--;
-      }
-      info->linecount_flag = 1;
-      remove_comments(*buf);
-      build_history_(info);
