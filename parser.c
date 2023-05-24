@@ -2,7 +2,7 @@ int _myexit(info_t *info) {
   int exitcheck;
 
   if (info->argv[1]) { /* if there is an exit argument */
-    exitcheck = attrib(info->argv[1]);
+    exitcheck = atoi(info->argv[1]);
     if (exitcheck == -1) {
       info->status = 2;
       printf("Illegal number: %s\n", info->argv[1]);

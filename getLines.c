@@ -1,9 +1,13 @@
-int _myexit(info_t *info) {
+
+int _myexit(info_t *info)
+{
   int exitcheck;
 
-  if (info->argv[1]) { /* if there is an exit argument */
-    exitcheck = attrib(info->argv[1]);
-    if (exitcheck == -1) {
+  if (info->argv[1]) /* if there is an exit argument */
+  {
+    exitcheck = atoi(info->argv[1]);
+    if (exitcheck == -1)
+    {
       info->status = 2;
       printf("Illegal number: %s\n", info->argv[1]);
       return (1);
@@ -15,60 +19,72 @@ int _myexit(info_t *info) {
   return (-2);
 }
 
-int _mycd(info_t *info) {
+int _mycd(info_t *info)
+{
   char *s, *dir, buffer[1024];
   int chdir_ret;
 
   s = getcwd(buffer, 1024);
-  if (!s) {
+  if (!s)
     printf("TODO: >>getcwd failure emsg here<<\n");
-  }
-  if (!info->argv[1]) {
+  if (!info->argv[1])
+  {
     dir = getenv("HOME");
-    if (!dir) {
+    if (!dir)
       chdir_ret = chdir("/");
-    } else {
+    else
       chdir_ret = chdir(dir);
-    }
-  } else if (strcmp(info->argv[1], "-") == 0) {
-    if (!getenv("OLDPWD")) {
+  }
+  else if (strcmp(info->argv[1], "-") == 0)
+  {
+    if (!getenv("OLDPWD"))
+    {
       printf("%s\n", s);
       return (1);
     }
     printf("%s\n", getenv("OLDPWD"));
     chdir_ret = chdir(getenv("OLDPWD"));
-  } else {
-    chdir_ret = chdir(info->argv[1]);
   }
-  if (chdir_ret == -1) {
+  else
+    chdir_ret = chdir(info->argv[1]);
+  if (chdir_ret == -1)
+  {
     printf("can't cd to %s\n", info->argv[1]);
-  } else {
+  }
+  else
+  {
     setenv("OLDPWD", getenv("PWD"), 1);
     setenv("PWD", getcwd(buffer, 1024), 1);
   }
   return (0);
 }
 
-int _myhelp(info_t *info) {
+int _myhelp(info_t *info)
+{
   printf("help call works. Function not yet implemented \n");
   return (0);
 }
 
-int _myhistory(info_t *info) {
+int _myhistory(info_t *info)
+{
   list_t *node = info->history;
   int i = 0;
 
-  while (node) {
+  while (node)
+  {
     printf("%d: %s\n", i++, node->str);
     node = node->next;
   }
   return (0);
 }
 
-int unset_alias(info_t *info, char *str) {
+int unset_alias(info_t *info, char *str)
+{
   list_t *node = info->alias;
-  while (node) {
-    if (strcmp(node->str, str) == 0) {
+  while (node)
+  {
+    if (strcmp(node->str, str) == 0)
+    {
       free(node->str);
       free(node);
       info->alias = node->next;
@@ -79,11 +95,13 @@ int unset_alias(info_t *info, char *str) {
   return (1);
 }
 
-ssize_t input_buf(info_t *info, char **buf, size_t *len) {
+ssize_t input_buf(info_t *info, char **buf, size_t *len)
+{
   ssize_t r = 0;
   size_t len_p = 0;
 
-  if (!*len) { /* if nothing is left in the buffer, fill it */
+  if (!*len) /* if nothing is left in the buffer, fill it */
+  {
     free(*buf);
     *buf = NULL;
     signal(SIGINT, sigintHandler);
@@ -92,11 +110,20 @@ ssize_t input_buf(info_t *info, char **buf, size_t *len) {
 #else
     r = _getline(info, buf, &len_p);
 #endif
-    if (r > 0) {
-      if ((*buf)[r - 1] == '\n') {
+    if (r > 0)
+    {
+      if ((*buf)[r - 1] == '\n')
+      {
         (*buf)[r - 1] = '\0';
         r--;
       }
       info->linecount_flag = 1;
       remove_comments(*buf);
-      build_history_
+      build_history_list(info, *buf, info->histcount++);
+      *len = r;
+    }
+  }
+  return (r);
+}
+
+ssize_t get_input(info_t *info)
