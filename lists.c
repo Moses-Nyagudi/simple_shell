@@ -1,4 +1,4 @@
-#include "main.h"
+#include "shell.h"
 
 /**
  * add_node - adds a node to the start of the list
@@ -10,7 +10,7 @@
  */
 list_t *add_node(list_t **head, const char *str, int num)
 {
-	list_t *new_head;
+	list_t *num_head;
 
 	if (!head)
 		return (NULL);
@@ -114,7 +114,6 @@ int delete_node_at_index(list_t **head, unsigned int index)
 		node = *head;
 		*head = (*head)->next;
 		free(node->str);
-		free(node);
 		return (1);
 	}
 	node = *head;

@@ -1,4 +1,4 @@
-#include "main.h"
+#include "shell.h"
 
 /**
  * is_cmd - determines if a file is an executable command
@@ -32,7 +32,7 @@ int is_cmd(info_t *info, char *path)
  */
 char *dup_chars(char *pathstr, int start, int stop)
 {
-	static char buf[1024];
+	static xhar buf[1024];
 	int i = 0, k = 0;
 
 	for (k = 0, i = start; i < stop; i++)
