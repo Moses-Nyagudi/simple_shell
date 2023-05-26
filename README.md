@@ -1,13 +1,42 @@
-ALX Simple Shell Team Project
+simple_shell
 
-This is an ALX collaboartaion project on Shell. Our shell can be called hsh
-The project was completed using C language, shell and Betty linter
+A simple C shell project
 
 Description
-hsh is a simple UNIX command language interpreter that reads commands from either a file or standard input and excutes them.
 
-hsh prints a prompt and wait for a command from the user
-hsh creates a child process in which the command is checked
-The child process is replaced by the command that accepts arguments after which the program returns to the parent process and prints the prompt. Then the program is ready to receive a new command. 
-hsh checks for built-ins, aliases in the pathh and local executable programs
-hsh works in non-interactive modes also.
+This is a simple UNIX command interpreter that replicates functionalities of thesimple shell (sh). This program was written entirely in C as a project for Alx School.
+
+Installation
+
+Clone this repository into your working directory. This program can be compiled and launched from the command line. Files should be compiled with GCC and the following flags: -Wall -Wextra -Werror -pedantic -Wno-format.
+
+Usage
+
+After compilation, the resulting program can run, either in interactive or non-interactive mode.
+
+Interactive Mode
+
+In interactive mode, simply run the program and wait for the prompt to appear. From there, you can type commands freely, exiting with either the "exit" command or ctrl-D.
+
+Non-Interactive Mode
+
+In non-interactive mode, echo your desired command and pipe it into the program like this:
+
+echo "ls" | ./shell In non-interactive mode, the program will exit after finishing your desired command(s).
+
+man_1_simple_shell
+
+This is the man page which contains all functions and descriptions of all the functions used in this Simple shell project.
+
+AUTHORS
+
+This file contains the details of all the individuals that contributed to this shell project.
+
+Features
+
+1. DIsplay a prompt and wait for the user to type a command. A command-line always ends with a new line.
+2. The prompt is displayed again each time a command has been executed.
+3. The command lines are simple, no semicolons, no pipes, no redirections, or any other advanced features.
+4. The command lines are made only of one word.No arguement will be passed to the programs.
+5. If an executable is not found the shell prints an error message and displays the prompt again.
+
