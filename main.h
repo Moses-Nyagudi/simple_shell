@@ -17,7 +17,7 @@
 #define WRITE_BUF_SIZE 1024
 #define BUF_FLUSH -1
 
-/* for command chaining */
+/* for command connectoring */
 #define CMD_NORM	0
 #define CMD_OR		1
 #define CMD_AND		2
@@ -64,10 +64,10 @@ typedef struct liststr
  *@env: linked list local copy of environ
  *@environ: custom modified copy of environ from LL env
  *@history: the history node
- *@alias: the alias node
+ *@attrib: the attrib node
  *@env_changed: on if environ was changed
  *@status: the return status of the last exec'd command
- *@cmd_buf: address of pointer to cmd_buf, on if chaining
+ *@cmd_buf: address of pointer to cmd_buf, on if connectoring
  *@cmd_buf_type: CMD_type ||, &&, ;
  *@readfd: the fd from which to read line input
  *@histcount: the history line number count
@@ -84,12 +84,12 @@ typedef struct passinfo
 	char *fname;
 	list_t *env;
 	list_t *history;
-	list_t *alias;
+	list_t *attrib;
 	char **environ;
 	int env_changed;
 	int status;
 
-	char **cmd_buf; /* pointer to cmd ; chain buffer, for memory mangement */
+	char **cmd_buf; /* pointer to cmd ; connector buffer, for memory mangement */
 	int cmd_buf_type; /* CMD_type ||, &&, ; */
 	int readfd;
 	int histcount;
@@ -100,20 +100,20 @@ typedef struct passinfo
 	0, 0, 0}
 
 /**
- *struct builtin - contains a builtin string and related function
- *@type: the builtin command flag
+ *struct buildin - contains a buildin string and related function
+ *@type: the buildin command flag
  *@func: the function
  */
-typedef struct builtin
+typedef struct buildin
 {
 	char *type;
 	int (*func)(info_t *);
-} builtin_table;
+} buildin_table;
 
 
 /* hsh.c */
 int hsh(info_t *, char **);
-int find_builtin(info_t *);
+int find_buildin(info_t *);
 void find_cmd(info_t *);
 void fork_cmd(info_t *);
 
@@ -173,12 +173,12 @@ int print_d(int, int);
 char *convert_number(long int, int, int);
 void remove_comments(char *);
 
-/* builtin_emulators.c */
+/* buildin_emulators.c */
 int _myexit(info_t *);
 int _mycd(info_t *);
 int _myhelp(info_t *);
 
-/* builtin_emulators2.c */
+/* buildin_emulators2.c */
 int _myhistory(info_t *);
 int _myalias(info_t *);
 
@@ -225,9 +225,9 @@ size_t print_list(const list_t *);
 list_t *node_starts_with(list_t *, char *, char);
 ssize_t get_node_index(list_t *, list_t *);
 
-/* chain.c */
-int is_chain(info_t *, char *, size_t *);
-void check_chain(info_t *, char *, size_t *, size_t, size_t);
+/* connector.c */
+int is_connector(info_t *, char *, size_t *);
+void check_connector(info_t *, char *, size_t *, size_t, size_t);
 int replace_alias(info_t *);
 int replace_vars(info_t *);
 int replace_string(char **, char *);
