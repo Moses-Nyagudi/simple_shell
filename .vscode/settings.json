@@ -1,0 +1,24 @@
+{
+    "cSpell.words": [
+        "chdir",
+        "closedir",
+        "execve",
+        "fflush",
+        "fstat",
+        "fxstat",
+        "getcwd",
+        "getline",
+        "getpid",
+        "isatty",
+        "lxstat",
+        "malloc",
+        "opendir",
+        "perror",
+        "readdir",
+        "strtok",
+        "waitpid",
+        "Werror",
+        "Wextra",
+        "xstat"
+    ]
+}

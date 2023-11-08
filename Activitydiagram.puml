@@ -1,0 +1,23 @@
+@startuml Simple Shell
+!pragma useVerticalIf on
+start
+:Input command;
+if (Exit command) then (yes)
+    :Terminate;
+    stop
+elseif (wildcard) then (yes)
+    :globbing;
+endif
+:parsing;
+if (Pipeline / Redirect) then (yes)
+    :handle;
+elseif (executable built in command) then (no)
+    #red :error;
+    stop
+
+endif
+:Execute;
+#green :Display output;
+end
+
+@enduml
