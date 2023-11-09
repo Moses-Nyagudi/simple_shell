@@ -16,6 +16,7 @@
         "perror",
         "readdir",
         "strtok",
+        "Tokenizes",
         "waitpid",
         "Werror",
         "Wextra",

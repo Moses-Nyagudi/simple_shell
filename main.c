@@ -1,74 +1,37 @@
 #include "main.h"
 
 /**
- * main - Simple shell implementation.
+ * main - Entry point of the program
+ * @argc: Number of command line arguments
+ * @argv: Array of command line argument strings
  *
- * @argc: Number of command line arguments.
- * @argv: Array of command line arguments.
- *
- * @return: 0 on success.
+ * Return: Always 0 (Success)
  */
 
 int main(int argc, char **argv)
 {
-    char *prompt = "(Enter your command) $ ";
-    char *line = NULL, *line_copy = NULL;
-    size_t line_length = 0;
-    ssize_t chars_read;
-    const char *delimiters = " \n";
-    int i, num_tokens = 0;
-    char **arguments, *token;
+	char *prompt = "(Enter your command) $ ";
 
-    /* Suppress unused variable warning */
-    (void)argc;
-    (void)argv;
+	char *line, **arguments;
 
-    while (1)
-    {
-        printf("%s", prompt);
-        chars_read = getline(&line, &line_length, stdin);
+	int i;
 
-        if (chars_read == -1)
-        {
-            printf("Exiting shell...\n");
-            break;
-        }
+	(void)argc;
+	(void)argv;
+	while (1)
+	{
+		line = read_input(prompt);
+		arguments = tokenize_input(line);
+		execute_command(arguments);
 
-        line_copy = strdup(line);
+		free(line);
+		for (i = 0; arguments[i] != NULL; i++)
+		{
+			free(arguments[i]);
+		}
 
-        token = strtok(line, delimiters);
+		free(arguments);
+	}
 
-        while (token != NULL)
-        {
-            num_tokens++;
-            token = strtok(NULL, delimiters);
-        }
-        num_tokens++;
-
-        arguments = (char **)malloc(sizeof(char *) * (num_tokens + 1));
-
-        token = strtok(line_copy, delimiters);
-
-        for (i = 0; token != NULL; i++)
-        {
-            arguments[i] = strdup(token);
-            token = strtok(NULL, delimiters);
-        }
-        arguments[i] = NULL;
-
-        execute_command(arguments);
-
-    
-        free(line_copy);
-        for (i = 0; i < num_tokens; i++)
-        {
-            free(arguments[i]);
-        }
-        free(arguments);
-    }
-
-
-    free(line);
-
-    return 0;
+	return (0);
 }
