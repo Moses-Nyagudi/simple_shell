@@ -4,9 +4,9 @@ This is a collaboration project for ALX software developers for its Low Level la
 
 The shell should be able to : -
 
-- [ ] Read User input.
-- [ ] Interpret given command.
-- [ ] Execute command.
+- [x] Read User input.
+- [x] Interpret given command.
+- [x] Execute command.
 
 ## Allowed functions and System Calls
 
@@ -46,7 +46,7 @@ The shell should be able to : -
 
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 
-## Authors 
+## Authors
 
 1. Collins Mwambi
 2. Moses Nyagudi

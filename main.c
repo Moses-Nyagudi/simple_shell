@@ -1,5 +1,14 @@
 #include "main.h"
 
+/**
+ * main - Simple shell implementation.
+ *
+ * @argc: Number of command line arguments.
+ * @argv: Array of command line arguments.
+ *
+ * @return: 0 on success.
+ */
+
 int main(int argc, char **argv)
 {
     char *prompt = "(Enter your command) $ ";
