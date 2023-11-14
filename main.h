@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+extern char **environ;
+
 void execute_external_command(char **arguments);
 void execute_builtin_command(char *command);
 void execute_command(char **arguments);
