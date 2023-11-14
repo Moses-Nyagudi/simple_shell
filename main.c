@@ -24,8 +24,7 @@ int main(int argc, char **argv)
 
 		if (arguments[0] != NULL)
 		{
-			execute_builtin_command(arguments[0]);
-			execute_external_command(arguments);
+			execute_command(arguments);
 		}
 
 		free(line);
