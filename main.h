@@ -8,7 +8,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-void execute_command(char **arguments);
+void execute_external_command(char **arguments);
+void execute_builtin_command(char *command);
 char *get_location(char *command);
 char **tokenize_input(char *input);
 char *read_input(const char *prompt);
