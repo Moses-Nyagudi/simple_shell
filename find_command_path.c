@@ -1,11 +1,11 @@
 #include "main.h"
 
 /**
- * get_location - Locates the full path of a command in the PATH environment.
- * @command: The command to locate.
- *
- * Return: A pointer to the full path if found, otherwise NULL.
- */
+* get_location - Locates the full path of a command in the PATH environment.
+* @command: The command to locate.
+*
+* Return: A pointer to the full path if found, otherwise NULL.
+*/
 
 char *get_location(char *command)
 {
@@ -14,6 +14,12 @@ char *get_location(char *command)
 	int command_length, directory_length;
 
 	struct stat buffer;
+
+	/*If the command contains a '/' character, assume it's an absolute or*/
+	if (strchr(command, '/') != NULL)
+	{
+		return (strdup(command));
+	}
 
 	path = getenv("PATH");
 	if (path)
@@ -41,11 +47,6 @@ char *get_location(char *command)
 			}
 		}
 		free(path_copy);
-		if (stat(command, &buffer) == 0)
-		{
-			return (command);
-		}
-		return (NULL);
 	}
 	return (NULL);
 }

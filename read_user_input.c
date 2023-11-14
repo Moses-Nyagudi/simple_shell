@@ -6,7 +6,6 @@
 *
 * Return: A pointer to the input line
 */
-
 char *read_input(const char *prompt)
 {
 	char *line = NULL;
@@ -16,6 +15,7 @@ char *read_input(const char *prompt)
 
 	printf("%s", prompt);
 	chars_read = getline(&line, &line_length, stdin);
+
 
 	if (chars_read == -1)
 	{

@@ -11,6 +11,7 @@
 * @arguments: An array of strings representing the command and its arguments.
 */
 
+
 void execute_command(char **arguments)
 {
 	char *command = NULL, *actual_command = NULL;
@@ -20,9 +21,36 @@ void execute_command(char **arguments)
 		command = arguments[0];
 		actual_command = get_location(command);
 
-		if (execve(actual_command, arguments, NULL) == -1)
+		/*Check if the command exists before forking*/
+		if (actual_command)
 		{
-			perror("Error");
+			/* Fork only if the command exists*/
+			pid_t pid = fork();
+
+			if (pid == -1)
+			{
+				perror("Error in fork");
+			}
+			else if (pid == 0)
+			{
+				/*Child process*/
+				if (execve(actual_command, arguments, NULL) == -1)
+				{
+					perror("Error");
+					exit(EXIT_FAILURE);
+				}
+			}
+			else
+			{
+				/*Parent process*/
+				int status;
+
+				waitpid(pid, &status, 0);
+			}
+		}
+		else
+		{
+			fprintf(stderr, "%s: command not found\n", command);
 		}
 	}
 }
