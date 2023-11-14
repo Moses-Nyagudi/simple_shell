@@ -2,11 +2,11 @@
 #include "main.h"
 
 /**
- * tokenize_input - Tokenizes the input string into an array of strings
- * @input: The input string to be tokenized
- *
- * Return: An array of strings containing the tokens
- */
+* tokenize_input - Tokenizes the input string into an array of strings
+* @input: The input string to be tokenized
+*
+* Return: An array of strings containing the tokens
+*/
 
 char **tokenize_input(char *input)
 {
